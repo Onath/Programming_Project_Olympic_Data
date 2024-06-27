@@ -36,7 +36,8 @@ st.markdown("""
             - Information on 70,000 Olympic athletes, including personal attributes, team affiliations, events, and medals won.
             - Details on 230 National Olympic Committees (NOCs) and their regions.
 
-            My analysis focused on visualizing athlete participation by gender over the years, comparing total medals won by male and female athletes, examining age distribution, identifying top countries and athletes with the most medals, and analyzing the top 10 sports with the highest number of participants.
+            My analysis focused on visualizing athlete participation by gender over the years, comparing total medals won by male and female athletes, 
+            examining age distribution, identifying top countries and athletes with the most medals, and analyzing the top 10 sports with the highest number of participants.
             """)
 # Dataset presentation
 st.write("## DATASET OVERVIEW")
@@ -214,7 +215,8 @@ st.pyplot(fig)
 
 # MEDAL DISTRIBUTION OVER THE GENDER
 st.subheader("MEDAL DISTRIBUTION OVER THE GENDER")
-st.markdown("""We observe that, overall, men have won more medals than women. This is primarily due to the historically higher participation rates of men in the Olympic Games. However, starting from the 1970s and 1980s, the participation of women in the Olympics has significantly increased.""")
+st.markdown("""We observe that, overall, men have won more medals than women. This is primarily due to the historically higher participation rates of men in the Olympic Games. 
+            However, starting from the 1970s and 1980s, the participation of women in the Olympics has significantly increased.""")
 no_medal_mask= olympic_df[olympic_df['Medal']!='No medal']
 colors = ['gold', 'darkgoldenrod', 'silver']
 
@@ -224,7 +226,8 @@ for container in ax.containers:
 plt.show()
 st.pyplot(fig)
 
-st.markdown("""To illustrate this trend, I plotted the medals won by male and female athletes after 1980. The data shows a narrowing gap between the number of medals won by men and women, confirming the higher participation of women in the Olympic Games in recent decades.
+st.markdown("""To illustrate this trend, I plotted the medals won by male and female athletes after 1980. 
+            The data shows a narrowing gap between the number of medals won by men and women, confirming the higher participation of women in the Olympic Games in recent decades.
             """)
 no_medal_mask = olympic_df[olympic_df['Medal']!='No medal']
 df_after_1980 = no_medal_mask[no_medal_mask['Year']>1980].copy()
@@ -239,19 +242,21 @@ st.pyplot(fig)
 
 # ATHLETES AGE DISTRIBUTION
 st.subheader("ATHLETES AGE DISTRIBUTION")
-st.markdown("""**ADD COMMENT**""")
-# fig, ax = plt.subplots(figsize=(10, 6))
-# sns.histplot(olympic_df['Age'].values, kde=True, color='green', ax=ax)
-# ax.set_title('Age distribution of Athletes', fontsize=15, fontweight='bold')
-# ax.set_xlabel('Age')
-# ax.set_ylabel('Frequency')
-
-st.pyplot(fig)
+st.markdown("""The majority of athletes are between 20 and 25 years old, with the distribution leaning to the right. 
+            This means most athletes are young, and their numbers drop significantly after age 30. 
+            There are very few athletes over 40, highlighting that peak athletic performance typically occurs in the younger age range.""")
+x = sns.displot(olympic_df['Age'].values, color='slateblue')
+plt.title('Age Distribution of Athletes', fontsize=10)
+plt.xlabel('Age')
+st.pyplot(plt)
 
 # Top 10 team with most medals
 st.subheader("Total medals gained by each country and visualization of top 10 countries with most medals")
-st.markdown("""From the table, we can see that the United States leads with the highest number of total medals (1561) and the highest proportion of medals won (0.58). This indicates a high success rate for American athletes. Even if Italy has fewer medals than France, it has a slightly higher proportion (0.31) compared to France (0.27), suggesting that Italy had a more efficient medal-winning performance relative to the number of athletes.
-            Great Britain, Germany, Australia, Sweden, and Canada also have notable performances, with varying proportions of medals won. Germany, for instance, has a proportion of 0.44, which is relatively high compared to its total number of athletes (982).
+st.markdown("""From the table, we can see that the United States leads with the highest number of total medals (1561) and the highest proportion of medals won (0.58). 
+            This indicates a high success rate for American athletes. Even if Italy has fewer medals than France, it has a slightly higher proportion (0.31) compared to France (0.27), 
+            suggesting that Italy had a more efficient medal-winning performance relative to the number of athletes.
+            Great Britain, Germany, Australia, Sweden, and Canada also have notable performances, with varying proportions of medals won. Germany, for instance, 
+            has a proportion of 0.44, which is relatively high compared to its total number of athletes (982).
             """)
 medal_count = olympic_df.groupby(['NOC','Medal']).size().unstack(fill_value=0).reset_index()
 medal_count['Total'] = medal_count[['Gold', 'Silver', 'Bronze']].sum(axis=1)
@@ -313,7 +318,10 @@ st.pyplot(fig)
 
 # 10 SPORTS BY PARTCIPATION NUMBERS
 st.subheader("10 SPORTS BY PARTCIPATION NUMBERS AND THE LEADING COUNTRIES IN EACH SPORT")
-st.markdown(""" In the graph in below it is showed the number of athletes participating in various sports. Athletics has the highest participation, with around 6000 athletes, indicating its popularity. Swimming, Rowing, and Football also have significant participation, each with approximately 2000-2500 athletes. Other sports like Cycling, Boxing, Shooting, Wrestling, Sailing, and Fencing have lower participation levels, with around 1000 athletes each. 
+st.markdown(""" In the graph in below it is showed the number of athletes participating in various sports. 
+            Athletics has the highest participation, with around 6000 athletes, indicating its popularity. 
+            Swimming, Rowing, and Football also have significant participation, each with approximately 2000-2500 athletes. 
+            Other sports like Cycling, Boxing, Shooting, Wrestling, Sailing, and Fencing have lower participation levels, with around 1000 athletes each. 
             """)
 
 sport_athlete_count = olympic_df.groupby('Sport')['ID'].nunique().sort_values(ascending=False).head(10)
@@ -333,21 +341,23 @@ st.pyplot(fig)
 
 # CORRELATION MATRIX
 st.subheader("CORRELATION MATRIX")
-st.markdown("Numerical encoding before showing correlation matrix")
-st.markdown(""" **I used *get_dummies* function of pandas to transforms categorical variables into binary (0 or 1) variables.** """)
+st.markdown("Before showing I numerically encoded features that I need for correlation matrix")
+st.markdown("""**I also used *get_dummies* function of pandas to transforms categorical variables into binary (0 or 1) variables.**""")
 olympic_df = pd.get_dummies(olympic_df, columns=['Medal'], dtype=int)
 
 # Convert object columns into numerical columns for preparing data for model
-st.markdown("Convert object columns into numerical columns. ")
+# st.markdown("Convert object columns into numerical columns. ")
 label_encoder = LabelEncoder()
-for column in ['Sex' ,'Games', 'Season', 'Sport']:
+object_cols = olympic_df.select_dtypes(include=['object']).columns
+for column in object_cols:
     olympic_df[column] = label_encoder.fit_transform(olympic_df[column])
 
-numerical_cols = olympic_df.select_dtypes(include=['float64', 'int64']).columns
-corr_matrix = olympic_df[numerical_cols]
+numerical_cols = ['Sex', 'Age', 'Weight', 'Height', 'Team','Sport', 'Year','Season','Event', 'Medal_Bronze', 'Medal_Gold', 'Medal_Silver', 'Medal_No medal' ]
+
+corr_matrix = olympic_df[numerical_cols].corr()
 
 fig, ax = plt.subplots(figsize=(8, 6))
-sns.heatmap(corr_matrix, cmap="YlGnBu", annot=True, ax=ax)
+sns.heatmap(corr_matrix, cmap="coolwarm", annot=True, fmt=".2f",ax=ax)
 st.pyplot(fig)
 
 
@@ -386,38 +396,57 @@ def make_prediction(X, y, model):
     actual_predicted_values = pd.DataFrame(dict(actual=y_test, prediction=predictions))
     # pd.crosstab(index=actual_predicted_values['actual'], columns=actual_predicted_values['prediction'])
     precision = metrics.precision_score(y_test, predictions)
-    print(classification_report(y_test, predictions))
+    class_report = classification_report(y_test, predictions)
     
 
-    return actual_predicted_values, accuracy, precision 
+    return actual_predicted_values, accuracy, precision, class_report 
 
 st.markdown("Using different classification methods")
-st.markdown("1. Random Forest Classifier (with diffferent estimator nr and depth)")
+st.markdown("**1. Random Forest Classifier (with diffferent estimator nr and depth)**")
+st.markdown(""" The Random Forest classifier achieved an overall accuracy of 86.79% and a precision of 66.67%. 
+            However, there is a significant class imbalance, with the model performing much better for class 0 (majority class) than for class 1 (minority class). 
+            Class 0 has a high recall of 99% and an F1-score of 0.93, while class 1 has a very low recall of 11% and an F1-score of 0.19. 
+            This indicates that the model struggles to detect instances of class 1, largely due to the disproportionate amount of data in favor of the non-medal class (class 0). 
+            As a result, the model tends to predict the majority of new data as class 0.
+            """)
 model = RandomForestClassifier(n_estimators=50, min_samples_split=10, random_state=1)
 results_rf, accuracy_rf, precision_rf, class_report_rf = make_prediction(X, y, model)
-st.write(f"Accuracy: {accuracy_rf:.2f}")
-st.write(f"Precision: {precision_rf:.2f}")
-st.write(class_report_rf)
+st.write("Random Forest Classifier results:")
+st.write(f"Accuracy: {accuracy_rf:,.4f}")
+st.write(f"Precision: {precision_rf:,.4f}")
+st.write("Classification Report:")
+st.text(class_report_rf)
 
-
+st.write("**Random Forest Classifier with : n_estimators=250, random_state=200**")
 model = RandomForestClassifier(n_estimators=250, min_samples_split=10, random_state=200)
-make_prediction(X, y, model)
+results_rf2, accuracy_rf2, precision_rf2, class_report_rf2 =make_prediction(X, y, model)
+st.write("Random Forest Classifier results:")
+st.write(f"Accuracy: {accuracy_rf2:,.4f}")
+st.write(f"Precision: {precision_rf2:,.4f}")
+st.write("Classification Report:")
+st.text(class_report_rf2)
 
-st.markdown("2. Logistic Regression")
+st.markdown("**2. Logistic Regression**")
 model = LogisticRegression()
 results_lr, accuracy_lr, precision_lr, class_report_lr = make_prediction(X, y, model)
-st.write(f"**Accuracy:** {accuracy_lr:.2f}")
-st.write(f"**Precision:** {precision_lr:.2f}")
-st.table(class_report_lr)
+st.write("Random Forest Classifier results:")
+st.write(f"Accuracy: {accuracy_lr:,.4f}")
+st.write(f"Precision: {precision_lr:,.4f}")
+st.write("Classification Report:")
+st.text(class_report_lr)  
 
 
-st.markdown("3. XGBClassifier")
+st.markdown("**3. XGBClassifier**")
 model=XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
 results_xgb, accuracy_xgb, precision_xgb, class_report_xgb = make_prediction(X, y, model)
-st.write(f"Accuracy: {accuracy_xgb:.2f}")
-st.write(f"Precision: {precision_xgb:.2f}")
-st.dataframe(results_xgb)
+st.write("Random Forest Classifier results:")
+st.write(f"Accuracy: {accuracy_xgb:,.4f}")
+st.write(f"Precision: {precision_xgb:,.4f}")
+st.write("Classification Report:")
+st.text(class_report_xgb)
 
 
 ############### CONCLUSION ###############
 st.header("CONCLUSION")
+st.markdown("""We obtained similar results with each classification method used, highlighting the persistent issue of class imbalance. 
+            We can conclude that the current dataset is not suitable for making reliable predictions using classification methods without first addressing the class imbalance.""")
