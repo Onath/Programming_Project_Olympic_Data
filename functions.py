@@ -1,4 +1,5 @@
 from sklearn.ensemble import RandomForestRegressor
+import streamlit as st 
 
 #################### PRINT UNIQUE VALUES #####################
 def print_unique_values(df):
@@ -10,19 +11,15 @@ def print_unique_values(df):
 
 ########## IMPUTE MISSING VALUES WITH RANDOM FOREST ########## 
 def impute_missing_values_with_random_forest(df, column_name):
-    # Select only numerical columns (excluding the target column)
+    
     numerical_columns = df.select_dtypes(include=['int64', 'float64']).columns.tolist()
     if column_name in numerical_columns:
         numerical_columns.remove(column_name)
 
-    # Exclude columns with NaN values
     numerical_columns = [col for col in numerical_columns if not df[col].isna().any()]
 
-    # Splitting the data into two parts: one where target column is missing and one where it's not
-    df_with_target = df[df[column_name].notna()] #the target column is not NaN: These rows provide 
-                        # valuable information because they contain actual data that the model can learn from
-    df_without_target = df[df[column_name].isna()] #rows where the target column is NaN and needs to be imputed 
-                                # (using the information from the rows where the target column is not empty.)
+    df_with_target = df[df[column_name].notna()] 
+    df_without_target = df[df[column_name].isna()] 
 
     # Prepare the features (X) and target (y) using only numerical columns
     x = df_with_target[numerical_columns]
@@ -32,9 +29,30 @@ def impute_missing_values_with_random_forest(df, column_name):
     model = RandomForestRegressor(random_state=42)
     model.fit(x, y)
 
-    # Predicting the missing values
     predicted_values = model.predict(df_without_target[numerical_columns])
 
     # Fill in the missing values in the original DataFrame
     df.loc[df[column_name].isna(), column_name] = predicted_values
     return df
+
+
+##############################################################
+def get_missing_values_info(df):
+    missing_values = df.isna().sum()
+    total_missing = missing_values.sum()
+    missing_columns = missing_values[missing_values > 0].index.tolist()
+    return total_missing, missing_columns
+
+
+def display_missing_values_info(total_missing, missing_columns, df_name):
+    if total_missing > 0:
+        message = f"In {df_name}, there are {total_missing} missing values in columns: {', '.join(missing_columns)}"
+    else:
+        message = f"There are no missing values in {df_name}."
+    
+    st.markdown(f"""
+    <div style="border:2px solid #d3d3d3; padding: 10px; border-radius: 5px;">
+        {message}
+    </div>
+    """, unsafe_allow_html=True)
+##############################################################

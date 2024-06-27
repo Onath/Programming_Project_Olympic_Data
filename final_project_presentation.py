@@ -39,6 +39,7 @@ st.markdown("""
             My analysis focused on visualizing athlete participation by gender over the years, comparing total medals won by male and female athletes, 
             examining age distribution, identifying top countries and athletes with the most medals, and analyzing the top 10 sports with the highest number of participants.
             """)
+
 # Dataset presentation
 st.write("## DATASET OVERVIEW")
 st.write("Dataset [link](https://www.kaggle.com/datasets/bhanupratapbiswas/olympic-data/data)")
@@ -65,30 +66,14 @@ with st.expander("Dataset columns details"):
     
     for feature in features:
         st.write(feature)
+#############################################
+
 
 ############### DATA EXPLORATION ###############
-# elif option == "Data Exploration":
 st.header("DATA EXPLORATION")
 
 # Explore olympic_df
 dataset = st.selectbox("Select Dataset to see more information", ["Olympic Data", "NOC Region Data"])
-def get_missing_values_info(df):
-    missing_values = df.isna().sum()
-    total_missing = missing_values.sum()
-    missing_columns = missing_values[missing_values > 0].index.tolist()
-    return total_missing, missing_columns
-
-def display_missing_values_info(total_missing, missing_columns, df_name):
-    if total_missing > 0:
-        message = f"In {df_name}, there are {total_missing} missing values in columns: {', '.join(missing_columns)}"
-    else:
-        message = f"There are no missing values in {df_name}."
-    
-    st.markdown(f"""
-    <div style="border:2px solid #d3d3d3; padding: 10px; border-radius: 5px;">
-        {message}
-    </div>
-    """, unsafe_allow_html=True)
 
 if dataset == "Olympic Data":
     st.subheader("Explore olympic_df")
@@ -100,8 +85,8 @@ if dataset == "Olympic Data":
     st.text(info_olympic)
 
     st.dataframe(olympic_df.describe())
-    total_missing, missing_columns = get_missing_values_info(olympic_df)
-    display_missing_values_info(total_missing, missing_columns, "olympic_df")
+    total_missing, missing_columns = f.get_missing_values_info(olympic_df)
+    f.display_missing_values_info(total_missing, missing_columns, "olympic_df")
 
 elif dataset == "NOC Region Data":
     st.subheader("Explore noc_region_df")
@@ -113,8 +98,8 @@ elif dataset == "NOC Region Data":
     st.text(info_noc)
 
     st.dataframe(noc_region_df.describe())
-    total_missing, missing_columns = get_missing_values_info(noc_region_df)
-    display_missing_values_info(total_missing, missing_columns, "noc_region_df")
+    total_missing, missing_columns = f.get_missing_values_info(noc_region_df)
+    f.display_missing_values_info(total_missing, missing_columns, "noc_region_df")
 
 # Olympic data  histogram
 st.subheader("Olympic data histogram")
@@ -148,6 +133,7 @@ st.markdown("""
 noc_region_df.rename(columns={'noc_region' : 'NOC'}, inplace=True)
 olympic_df = olympic_df.merge(noc_region_df, on='NOC')
 olympic_df = olympic_df.drop(columns=['notes'])
+#############################################
 
 
 ############### DATA CLEANING ###############
@@ -178,8 +164,8 @@ st.write("## Missing values")
 olympic_df['Medal'] = olympic_df['Medal'].fillna(value='No medal')
 olympic_df.dropna(subset=['reg'], inplace=True)
 
-total_missing, missing_columns = get_missing_values_info(olympic_df)
-display_missing_values_info(total_missing, missing_columns, "olympic_df")
+total_missing, missing_columns = f.get_missing_values_info(olympic_df)
+f.display_missing_values_info(total_missing, missing_columns, "olympic_df")
 
 # Fill missing values
 st.markdown("""
@@ -198,7 +184,9 @@ st.markdown("""
 for column in olympic_df.columns:
     if olympic_df[column].isna().any():
         olympic_df = f.impute_missing_values_with_random_forest(olympic_df, column)
-        
+
+##################################################
+
     
 ############### DATA VISUALIZATION ###############
 
@@ -346,20 +334,24 @@ st.markdown("""**I also used *get_dummies* function of pandas to transforms cate
 olympic_df = pd.get_dummies(olympic_df, columns=['Medal'], dtype=int)
 
 # Convert object columns into numerical columns for preparing data for model
-# st.markdown("Convert object columns into numerical columns. ")
 label_encoder = LabelEncoder()
 object_cols = olympic_df.select_dtypes(include=['object']).columns
 for column in object_cols:
     olympic_df[column] = label_encoder.fit_transform(olympic_df[column])
 
+#Correlation matrix
 numerical_cols = ['Sex', 'Age', 'Weight', 'Height', 'Team','Sport', 'Year','Season','Event', 'Medal_Bronze', 'Medal_Gold', 'Medal_Silver', 'Medal_No medal' ]
-
 corr_matrix = olympic_df[numerical_cols].corr()
-
 fig, ax = plt.subplots(figsize=(8, 6))
 sns.heatmap(corr_matrix, cmap="coolwarm", annot=True, fmt=".2f",ax=ax)
 st.pyplot(fig)
 
+# Pair plot
+# st.subheader("Pair plot matrix")
+# plt.figure(figsize=(13, 17))
+# pairplot = sns.pairplot(data=olympic_df.drop(columns='ID'))
+# st.pyplot(pairplot)
+#####################################
 
 ############### MODEL ###############
 
@@ -367,8 +359,11 @@ st.header("Model")
 st.write("Goal: Predicting if an athlete will win a medal or not using classification methods.")
 st.subheader("")
 st.markdown(""" **Prepare data**
+            
             - Firstly I prepared the data for models by converting that ones into numerical values.
+            
             - Defined target column: *Athlete Won Medal* 
+            
             - Scaled the data to ensure that all features contribute equally to the model.
             """)
 
@@ -382,7 +377,8 @@ olympic_df[numerical_cols] = scaler.fit_transform(olympic_df[numerical_cols])
 # Model Building
 st.subheader("Model Building")
 st.markdown("""We have to drop the target column because we will ppredict them using models and other columns that are not useful for our analysis.
-            """)
+            
+            We used 80% of data for training and 20% for testing.""")
 # X = features, y = target
 X = olympic_df.drop(['ID', 'Name','Athlete Won Medal', 'Medal_Bronze', 'Medal_Gold', 'Medal_Silver', 'Medal_No medal', 'Team', 'NOC', 'reg', 'City', 'Event'], axis=1)
 y = olympic_df['Athlete Won Medal']
@@ -394,7 +390,6 @@ def make_prediction(X, y, model):
     predictions = model.predict(X_test)
     accuracy = accuracy_score(y_test, predictions)
     actual_predicted_values = pd.DataFrame(dict(actual=y_test, prediction=predictions))
-    # pd.crosstab(index=actual_predicted_values['actual'], columns=actual_predicted_values['prediction'])
     precision = metrics.precision_score(y_test, predictions)
     class_report = classification_report(y_test, predictions)
     
@@ -417,8 +412,8 @@ st.write(f"Precision: {precision_rf:,.4f}")
 st.write("Classification Report:")
 st.text(class_report_rf)
 
-st.write("**Random Forest Classifier with : n_estimators=250, random_state=200**")
-model = RandomForestClassifier(n_estimators=250, min_samples_split=10, random_state=200)
+st.write("**Random Forest Classifier with : n_estimators=200, max_depth=250**")
+model = model = RandomForestClassifier(n_estimators=200, min_samples_split=10, random_state=1, max_depth=250, class_weight='balanced')
 results_rf2, accuracy_rf2, precision_rf2, class_report_rf2 =make_prediction(X, y, model)
 st.write("Random Forest Classifier results:")
 st.write(f"Accuracy: {accuracy_rf2:,.4f}")
@@ -444,6 +439,7 @@ st.write(f"Accuracy: {accuracy_xgb:,.4f}")
 st.write(f"Precision: {precision_xgb:,.4f}")
 st.write("Classification Report:")
 st.text(class_report_xgb)
+##########################################
 
 
 ############### CONCLUSION ###############

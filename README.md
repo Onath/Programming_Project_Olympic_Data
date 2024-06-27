@@ -1,18 +1,17 @@
 # OLYMPIC DATA ANALYSIS
 
-**COLUMNS**
-1. **ID:** identifier for each athlete.
-2. **NAME:**  The full name of the athlete.
-3. **SEX:** The gender of the athlete, represented as 'M' for male and 'F' for female.
-4. **AGE:** The age of the athlete at the time of the Olympics.
-5. **HEIGHT:** The height of the athlete in centimeters.
-6. **WEIGHT:** The weight of the athlete in kilograms.
-7. **TEAM:** The country the athlete represents.
-8. **NOC:** The National Olympic Committee (NOC) code for the country the athlete represents.
-9. **GAMES:** The edition of the Olympics the athlete participated in, including the year and the season (Summer or Winter).
-10. **YEAR:** The year of the Olympics.
-11. **SEASON:** The season of the Olympics, either Summer or Winter.
-12. **CITY:** The host city of the Olympics.
-13. **SPORT:** The sport the athlete competed in.
-14. **EVENT:** The specific event within the sport that the athlete competed in.
-15. **MEDAL:** The type of medal won by the athlete, if any (Gold, Silver, Bronze, or NaN if no medal was won).
+**PROJECT OBJECTIVE**
+The project aims to analyze a dataset containing Olympic data. After a detailed analysis, the dataset was cleaned and prepared for use in a prediction model. A classification model is employed to predict whether an athlete will win a medal.
+
+**DATA INFORMATION**
+Two datasets were sourced from Kaggle and will be merged for the analysis. 
+One dataset contains detailed information about Olympic athletes, including unique identifiers, personal details such as name, gender, age, height, and weight, and the country they represent. It also records their participation details, including the edition and year of the Olympics, the host city, the sport and specific event they competed in, and the type of medal won, if any. 
+The other dataset provides information about National Olympic Committees (NOCs) and their regions.
+
+**USED TECHNOLOGIES**
+- Python
+- Pandas for data exploration
+- Matplotlib and Seaborn for data visualization
+- sklearn and xgboost for models
+- Streamlit for deploying the web app
+
